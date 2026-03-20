@@ -131,6 +131,11 @@ Callables or other Python objects must be passed in `setup.py` (via the `use_scm
 
     Note: This setting is overridden by any explicit `pre_parse` parameter passed to the git parse function.
 
+`scm.git.deepen_step`
+:   An integer counting how many commits to fetch at once for `"fetch_on_shallow"`, above.
+
+    Defaults to 100.
+
 `git_describe_command` (deprecated)
 :   **Deprecated since 8.4.0**: Use `scm.git.describe_command` instead.
 
