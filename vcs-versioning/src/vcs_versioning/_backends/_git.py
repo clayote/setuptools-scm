@@ -179,7 +179,7 @@ class GitWorkdir(Workdir):
 
     def fetch_shallow(self, config: Configuration) -> None:
         while self.run_describe(config) is None:
-            run_git(["fetch", f"--deepen={config.unshallow_step}"], self.path, check=True, timeout=30)
+            run_git(["fetch", f"--deepen={config.deepen_step}"], self.path, check=True, timeout=30)
 
     def node(self) -> str | None:
         return run_git(

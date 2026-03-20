@@ -148,7 +148,7 @@ class GitConfiguration:
         default_factory=lambda: _get_default_git_pre_parse()
     )
     describe_command: _t.CMD_TYPE | None = None
-    unshallow_step: int = 100
+    deepen_step: int = 100
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> GitConfiguration:
