@@ -214,6 +214,7 @@ class Configuration:
     search_parent_directories: bool = False
 
     parent: _t.PathT | None = None
+    unshallow_step: int = 100
 
     # Nested SCM configurations
     scm: ScmConfiguration = dataclasses.field(

@@ -177,8 +177,9 @@ class GitWorkdir(Workdir):
     def is_shallow(self) -> bool:
         return self.path.joinpath(".git/shallow").is_file()
 
-    def fetch_shallow(self) -> None:
-        run_git(["fetch", "--unshallow"], self.path, check=True, timeout=240)
+    def fetch_shallow(self, config: Configuration) -> None:
+        while self.run_describe(config) is None:
+            run_git(["fetch", "--deepen", str(config.unshallow_step)], self.path, check=True, timeout=30)
 
     def node(self) -> str | None:
         return run_git(
@@ -195,22 +196,22 @@ class GitWorkdir(Workdir):
         return run_git(DEFAULT_DESCRIBE[1:], self.path)
 
 
-def warn_on_shallow(wd: GitWorkdir) -> None:
+def warn_on_shallow(wd: GitWorkdir, config: Configuration) -> None:
     """experimental, may change at any time"""
     if wd.is_shallow():
         warnings.warn(f'"{wd.path}" is shallow and may cause errors', stacklevel=2)
 
 
-def fetch_on_shallow(wd: GitWorkdir) -> None:
+def fetch_on_shallow(wd: GitWorkdir, config: Configuration) -> None:
     """experimental, may change at any time"""
     if wd.is_shallow():
         warnings.warn(
             f'"{wd.path}" was shallow, git fetch was used to rectify', stacklevel=2
         )
-        wd.fetch_shallow()
+        wd.fetch_shallow(config)
 
 
-def fail_on_shallow(wd: GitWorkdir) -> None:
+def fail_on_shallow(wd: GitWorkdir, config: Configuration) -> None:
     """experimental, may change at any time"""
     if wd.is_shallow():
         raise ValueError(
@@ -218,7 +219,7 @@ def fail_on_shallow(wd: GitWorkdir) -> None:
         )
 
 
-def fail_on_missing_submodules(wd: GitWorkdir) -> None:
+def fail_on_missing_submodules(wd: GitWorkdir, config: Configuration) -> None:
     """
     Fail if submodules are defined but not initialized/cloned.
 
@@ -269,7 +270,7 @@ def fail_on_missing_submodules(wd: GitWorkdir) -> None:
 
 
 # Mapping from enum items to actual pre_parse functions
-_GIT_PRE_PARSE_FUNCTIONS: dict[GitPreParse, Callable[[GitWorkdir], None]] = {
+_GIT_PRE_PARSE_FUNCTIONS: dict[GitPreParse, Callable[[GitWorkdir, Configuration], None]] = {
     GitPreParse.WARN_ON_SHALLOW: warn_on_shallow,
     GitPreParse.FAIL_ON_SHALLOW: fail_on_shallow,
     GitPreParse.FETCH_ON_SHALLOW: fetch_on_shallow,
@@ -353,11 +354,11 @@ def version_from_describe(
 def _git_parse_inner(
     config: Configuration,
     wd: GitWorkdir | hg_git.GitWorkdirHgClient,
-    pre_parse: (Callable[[GitWorkdir | hg_git.GitWorkdirHgClient], None]) | None = None,
+    pre_parse: (Callable[[GitWorkdir | hg_git.GitWorkdirHgClient, Configuration], None]) | None = None,
     describe_command: _t.CMD_TYPE | None = None,
 ) -> ScmVersion:
     if pre_parse:
-        pre_parse(wd)
+        pre_parse(wd, config)
 
     version = version_from_describe(wd, config, describe_command)
 
