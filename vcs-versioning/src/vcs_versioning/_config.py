@@ -148,6 +148,7 @@ class GitConfiguration:
         default_factory=lambda: _get_default_git_pre_parse()
     )
     describe_command: _t.CMD_TYPE | None = None
+    unshallow_step: int = 100
 
     @classmethod
     def from_data(cls, data: dict[str, Any]) -> GitConfiguration:
@@ -214,7 +215,6 @@ class Configuration:
     search_parent_directories: bool = False
 
     parent: _t.PathT | None = None
-    unshallow_step: int = 100
 
     # Nested SCM configurations
     scm: ScmConfiguration = dataclasses.field(
